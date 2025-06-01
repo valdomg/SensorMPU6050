@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = "build/SensorMPU6050.uf2"
+elf = "build/SensorMPU6050.elf"

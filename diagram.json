@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "author": "Valdemiro Gabriel Oliveira dos Santos Nascimento",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-pi-pico-w",
+      "id": "pico",
+      "top": -22.45,
+      "left": -15.65,
+      "attrs": { "builder": "pico-sdk" }
+    },
+    {
+      "type": "wokwi-mpu6050",
+      "id": "imu1",
+      "top": 31.78,
+      "left": 108.52,
+      "rotate": 270,
+      "attrs": {}
+    },
+    { "type": "wokwi-servo", "id": "servo1", "top": 84.4, "left": 115.2, "attrs": {} }
+  ],
+  "connections": [
+    [ "pico:GP0", "$serialMonitor:RX", "", [] ],
+    [ "pico:GP1", "$serialMonitor:TX", "", [] ],
+    [ "imu1:VCC", "pico:3V3", "red", [ "h-28.8", "v22.37" ] ],
+    [ "imu1:SCL", "pico:GP27", "cyan", [ "h-38.4", "v19.12" ] ],
+    [ "imu1:SDA", "pico:GP26", "blue", [ "h-9.6", "v-0.08", "h-19.2", "v19.2" ] ],
+    [ "imu1:GND", "pico:GND.7", "black", [ "h-48", "v19.12" ] ]
+  ],
+  "dependencies": {}
+}
