@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
@@ -13,6 +14,9 @@ const int addr = 0x68;
 const int SCL = 27;
 const int SDA = 28;
 
+const float VALOR_BRUTO_GRAVIDADE = 16384.0;
+const float PI = 3.14;
+
 // Reset da MPU6050
 #ifdef i2c_default
 static void mpu6050_reset()
@@ -21,8 +25,8 @@ static void mpu6050_reset()
   uint8_t buf[] = {0x6B, 0x80};
 
   /*
-  Função para tentar escrever um número especificado de bytes no endereço
-  do Sensor(neste caso o MPU6050)
+    Função para tentar escrever um número especificado de bytes no endereço
+    do Sensor(neste caso o MPU6050)
   */
   i2c_write_blocking(i2c_default, addr, buf, 2, false);
   sleep_ms(100);
@@ -34,8 +38,8 @@ static void mpu6050_reset()
 }
 
 /*
-Função para ler os valores raw do sensor MPU6050
-colocar os parâmetros aqui também
+  Função para ler os valores raw do sensor MPU6050
+  colocar os parâmetros aqui também
 */
 
 static void mpu6050_read_raw(int16_t accel[3], int16_t gyro[3])
@@ -65,8 +69,21 @@ static void mpu6050_read_raw(int16_t accel[3], int16_t gyro[3])
 }
 #endif
 
-void init_pwm()
-{
+uint16_t calcular_angulo(int16_t accel_x, int16_t accel_y, int16_t accel_z) {
+
+  float accel_x_g = accel_x / VALOR_BRUTO_GRAVIDADE;
+  float accel_y_g = accel_y / VALOR_BRUTO_GRAVIDADE;
+  float accel_z_g = accel_z / VALOR_BRUTO_GRAVIDADE;
+
+  /*
+    O retorno considera o valor do sinal dos dois parâmetros dados,
+    assim retornando um valor com mais precição , ângulo em radianos.
+  */
+
+  float angulo = atan2(accel_x_g, sqrt(accel_y_g * accel_y_g + accel_z_g * accel_z_g)) * (180.0 / M_PI);
+
+  return angulo;
+
 }
 
 void init_i2c()
@@ -83,8 +100,8 @@ void init_i2c()
   mpu6050_reset();
 }
 
-int main()
-{
+
+int main() {
   stdio_init_all();
 
   init_i2c();
@@ -95,9 +112,12 @@ int main()
   {
 
     mpu6050_read_raw(acceleration, gyro);
+    float angulo = calcular_angulo(acceleration[0], acceleration[1], acceleration[2]);
 
     printf("Accel -> X: %d, Y: %d, Z: %d \n", acceleration[0], acceleration[1], acceleration[2]);
     printf("Gyro -> X: %d, Y: %d, Z: %d \n", gyro[0], gyro[1], gyro[2]);
+
+    printf("Inclinação/Ângulo: %.2f \n", angulo );
 
     sleep_ms(1000);
   }
