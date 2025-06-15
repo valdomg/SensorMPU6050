@@ -47,6 +47,7 @@ pico_enable_stdio_usb(SensorMPU6050 1)
 # Add the standard library to the build
 target_link_libraries(SensorMPU6050
         hardware_i2c
+        hardware_pwm
         pico_stdlib)
 
 # Add the standard include files to the build
