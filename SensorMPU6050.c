@@ -6,6 +6,7 @@
 #include "pico/binary_info.h"
 
 #include "hardware/i2c.h"
+#include "hardware/pwm.h"
 
 // Endereço do sensor MPU
 const int addr = 0x68;
@@ -13,6 +14,12 @@ const int addr = 0x68;
 // Pinos do sensor
 const int SCL = 27;
 const int SDA = 28;
+
+//Pino do Servo
+const int SERVO = 15;
+
+//Período em Microssegundos do Servo
+const int PERIODO_SERVO = 20;
 
 const float VALOR_BRUTO_GRAVIDADE = 16384.0;
 const float PI = 3.14;
@@ -86,6 +93,12 @@ uint16_t calcular_angulo(int16_t accel_x, int16_t accel_y, int16_t accel_z) {
 
 }
 
+// Converte ângulo (0–180) para pulso PWM em microssegundos (us)
+uint16_t angle_to_pwm_us(uint8_t angle) {
+    // Servo geralmente opera entre 1000us (0°) a 2000us (180°)
+    return 1000 + (angle * 1000 / 180);
+}
+
 void init_i2c()
 {
   i2c_init(i2c_default, 400 * 1000);
@@ -105,6 +118,7 @@ int main() {
   stdio_init_all();
 
   init_i2c();
+  init_servo();
 
   int16_t acceleration[3], gyro[3];
 
@@ -112,12 +126,15 @@ int main() {
   {
 
     mpu6050_read_raw(acceleration, gyro);
-    float angulo = calcular_angulo(acceleration[0], acceleration[1], acceleration[2]);
-
+    float angle = calcular_angulo(acceleration[0], acceleration[1], acceleration[2]);
+    
     printf("Accel -> X: %d, Y: %d, Z: %d \n", acceleration[0], acceleration[1], acceleration[2]);
     printf("Gyro -> X: %d, Y: %d, Z: %d \n", gyro[0], gyro[1], gyro[2]);
 
-    printf("Inclinação/Ângulo: %.2f \n", angulo );
+    int16_t duty = angle_to_pwm_us((int) angle);
+    printf("Inclinação/Ângulo: %.2f || Duty: %d \n", angle, duty );
+
+    set_servo_pwm_us(duty);  
 
     sleep_ms(1000);
   }
